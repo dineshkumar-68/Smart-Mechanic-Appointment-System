@@ -9,6 +9,7 @@ const DATA_DIR = process.env.VERCEL ? "/tmp" : path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "bookings.json");
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(__dirname));
 
 try {
@@ -378,9 +379,11 @@ app.get("/api/health", (req, res) => {
 ========================= */
 
 app.use((req, res) => {
-    res.sendFile(
-        path.join(__dirname, "index.html")
-    );
+    const publicIndex = path.join(__dirname, "public", "index.html");
+    if (fs.existsSync(publicIndex)) {
+        return res.sendFile(publicIndex);
+    }
+    res.sendFile(path.join(__dirname, "index.html"));
 });
 
 

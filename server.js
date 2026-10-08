@@ -387,13 +387,15 @@ app.use((req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log("");
-    console.log("==================================");
-    console.log("🚗 MechCare Server Running");
-    console.log(`🌐 http://localhost:${PORT}`);
-    console.log("==================================");
-    console.log("");
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log("");
+        console.log("==================================");
+        console.log("🚗 MechCare Server Running");
+        console.log(`🌐 http://localhost:${PORT}`);
+        console.log("==================================");
+        console.log("");
+    });
+}
 
 module.exports = app;

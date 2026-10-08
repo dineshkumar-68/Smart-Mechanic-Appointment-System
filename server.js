@@ -5,34 +5,45 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const DATA_DIR = path.join(__dirname, "data");
+const DATA_DIR = process.env.VERCEL ? "/tmp" : path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "bookings.json");
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+try {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
 
-if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, "[]");
+    if (!fs.existsSync(DATA_FILE)) {
+        fs.writeFileSync(DATA_FILE, "[]");
+    }
+} catch (e) {
+    console.warn("Notice: File system write restricted, using fallback storage:", e.message);
 }
 
 function readBookings() {
     try {
-        const data = fs.readFileSync(DATA_FILE, "utf8");
-        return JSON.parse(data || "[]");
+        if (fs.existsSync(DATA_FILE)) {
+            const data = fs.readFileSync(DATA_FILE, "utf8");
+            return JSON.parse(data || "[]");
+        }
+        return [];
     } catch (error) {
         return [];
     }
 }
 
 function saveBookings(bookings) {
-    fs.writeFileSync(
-        DATA_FILE,
-        JSON.stringify(bookings, null, 2)
-    );
+    try {
+        fs.writeFileSync(
+            DATA_FILE,
+            JSON.stringify(bookings, null, 2)
+        );
+    } catch (e) {
+        console.warn("Could not save bookings to disk:", e.message);
+    }
 }
 
 function generateBookingId() {
@@ -381,3 +392,5 @@ app.listen(PORT, () => {
     console.log("==================================");
     console.log("");
 });
+
+module.exports = app;
